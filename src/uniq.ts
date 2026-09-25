@@ -1,17 +1,8 @@
 import fs from 'node:fs';
 import readline from 'node:readline';
 
-export async function processData(inputFile: string, options: string[], outputFile: string) {
-    
-    if (inputFile && !fs.existsSync(inputFile)) {
-        process.exitCode = 2;
-        console.error(`uniq: ${inputFile}: No such file or directory`);
-        return;
-    }
+export async function processData(input: NodeJS.ReadableStream, options: string[], output: NodeJS.WritableStream) {
 
-    const input = inputFile ? fs.createReadStream(inputFile) : process.stdin;
-    const output = outputFile ? fs.createWriteStream(outputFile) : process.stdout;
-    
     let rl = readline.createInterface({
         input: input,
         crlfDelay: Infinity

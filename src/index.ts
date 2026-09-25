@@ -1,4 +1,4 @@
-
+import fs from 'node:fs';
 import { processData } from "./uniq.js";
 
 async function main() {
@@ -13,10 +13,18 @@ async function main() {
         let outputFile = contents[1] || '';
     
         if (content === undefined) {
-            await processData('', flags, '');
+            await processData(process.stdin, flags, process.stdout);
         }
         else {
-            await processData(content, flags, outputFile);
+              if (content && !fs.existsSync(content)) {
+                    process.exitCode = 2;
+                    console.error(`uniq: ${content}: No such file or directory`);
+                    return;
+                }
+                const inputStream = fs.createReadStream(content);
+                const outputStream = outputFile ? fs.createWriteStream(outputFile) : process.stdout;
+
+            await processData(inputStream, flags, outputStream);
         }
        
 }
