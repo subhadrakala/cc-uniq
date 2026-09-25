@@ -27,13 +27,15 @@ export async function processData(inputFile: string, options: string[], outputFi
     
     let prevLine: string | null = null;
     let count = 1;
+    let outputContent = '';
     for await (const line of rl) {
         if (prevLine == line) {
             count++;
         }
         else {
             if (prevLine !== null) {
-               writeLineToOutput(output, options, count, prevLine, true);
+               outputContent = generateOutputContent(options, count, prevLine, true);
+               output.write(outputContent);
             }
             prevLine = line;
             count = 1;
@@ -41,26 +43,29 @@ export async function processData(inputFile: string, options: string[], outputFi
     }
 
     if (prevLine !== null) {
-        writeLineToOutput(output, options, count, prevLine, (lastChar == '\n'));
+        outputContent = generateOutputContent(options, count, prevLine, (lastChar == '\n'));
+        output.write(outputContent);
     }
 }
 
-function writeLineToOutput(output: fs.WriteStream | NodeJS.WriteStream, options: string[], count: number, line: string, addNewLine: boolean) {
+export function generateOutputContent(options: string[], count: number, line: string, addNewLine: boolean) {
     const ending = addNewLine ? '\n' : '';
+    let output = '';
     if (options.includes('-c')) {
-        output.write(count.toString().padStart(4) + ' ' + line + ending);
+        output = count.toString().padStart(4) + ' ' + line + ending;
     }
     else if(options.includes('-d')) {
         if (count > 1) {
-            output.write(line + ending);
+            output = line + ending;
         }
     }
     else if (options.includes('-u')) {
         if (count == 1) {
-            output.write(line + ending);
+            output = line + ending;
         }
     }
     else {
-        output.write(line + ending);
+        output = line + ending;
     }
+    return output;
 }
